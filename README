@@ -1,0 +1,10 @@
+---INSTALL---
+
+./bootstrap
+./configure
+make
+
+---MISC---
+
+The functionality of the converter is intended to increase according to needs. 
+If your vtu file is not supported, email it to lukas.larisch@kaust.edu.sa
