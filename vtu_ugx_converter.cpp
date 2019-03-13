@@ -338,9 +338,37 @@ public:
 		std::pair<unsigned, unsigned> edge;
 		std::vector<unsigned> triangle(3);
 		std::vector<unsigned> quadrilateral(4);
+		std::vector<unsigned> prism(6);
+		std::vector<unsigned> tet(4);
+		std::vector<unsigned> pyramid(5);
+
+		unsigned cnt = 0;
 
 		for(unsigned i = 0; i < types.size(); ++i){
 			switch(types[i]){
+				case 10: //VTK_TETRA
+					edge.first = conn[j]; edge.second = conn[j+1]; _edges.push_back(edge);
+					edge.first = conn[j]; edge.second = conn[j+2]; _edges.push_back(edge);
+					edge.first = conn[j+1]; edge.second = conn[j+2]; _edges.push_back(edge);
+					edge.first = conn[j]; edge.second = conn[j+3]; _edges.push_back(edge);
+					edge.first = conn[j+1]; edge.second = conn[j+3]; _edges.push_back(edge);
+					edge.first = conn[j+2]; edge.second = conn[j+3]; _edges.push_back(edge);
+
+					triangle[0] = conn[j]; triangle[1] = conn[j+1]; triangle[2] = conn[j+3]; _triangles.push_back(triangle);
+					triangle[0] = conn[j]; triangle[1] = conn[j+2]; triangle[2] = conn[j+3]; _triangles.push_back(triangle);
+					triangle[0] = conn[j+1]; triangle[1] = conn[j+2]; triangle[2] = conn[j+3]; _triangles.push_back(triangle);
+
+					for(unsigned k = 0; k < 4; ++k){
+						tet[k] = conn[j+k];
+					}
+					_tets.push_back(tet);
+
+					cnt++;
+
+					j+= 4;
+
+					break;
+
 				case 13: //VTK_WEDGE
 					edge.first = conn[j]; edge.second = conn[j+1]; _edges.push_back(edge);
 					edge.first = conn[j]; edge.second = conn[j+2]; _edges.push_back(edge);
@@ -360,15 +388,48 @@ public:
 					quadrilateral[0] = conn[j+1]; quadrilateral[1] = conn[j+2]; quadrilateral[2] = conn[j+5]; quadrilateral[3] = conn[j+4]; _quadrilaterals.push_back(quadrilateral);
 
 					for(unsigned k = 0; k < 6; ++k){
-						_prisms.push_back(conn[j+k]);
+						prism[k] = conn[j+k];
 					}
+					_prisms.push_back(prism);
 
 					j+=6;
 
+					cnt++;
+
 					break;
+
+				case 14: //VTK_PYRAMID
+					edge.first = conn[j]; edge.second = conn[j+1]; _edges.push_back(edge);
+					edge.first = conn[j+1]; edge.second = conn[j+2]; _edges.push_back(edge);
+					edge.first = conn[j+2]; edge.second = conn[j+3]; _edges.push_back(edge);
+					edge.first = conn[j]; edge.second = conn[j+3]; _edges.push_back(edge);
+					edge.first = conn[j]; edge.second = conn[j+4]; _edges.push_back(edge);
+					edge.first = conn[j+1]; edge.second = conn[j+4]; _edges.push_back(edge);
+					edge.first = conn[j+2]; edge.second = conn[j+4]; _edges.push_back(edge);
+					edge.first = conn[j+3]; edge.second = conn[j+4]; _edges.push_back(edge);
+
+					triangle[0] = conn[j]; triangle[1] = conn[j+1]; triangle[2] = conn[j+4]; _triangles.push_back(triangle);
+					triangle[0] = conn[j+1]; triangle[1] = conn[j+2]; triangle[2] = conn[j+4]; _triangles.push_back(triangle);
+					triangle[0] = conn[j+2]; triangle[1] = conn[j+3]; triangle[2] = conn[j+4]; _triangles.push_back(triangle);
+					triangle[0] = conn[j]; triangle[1] = conn[j+3]; triangle[2] = conn[j+4]; _triangles.push_back(triangle);
+
+					quadrilateral[0] = conn[j]; quadrilateral[1] = conn[j+1]; quadrilateral[2] = conn[j+2]; quadrilateral[3] = conn[j+3]; _quadrilaterals.push_back(quadrilateral);
+
+					for(unsigned k = 0; k < 5; ++k){
+						pyramid[k] = conn[j+k];
+					}
+					_pyramids.push_back(pyramid);
+
+					j+=5;
+
+					cnt++;
+
+					break;
+					
 				default:
 					break;
 			}
+			//if(cnt == 1){ break; };
 		}
 
 		//rem doubles
@@ -403,21 +464,38 @@ public:
 		}
 		_fout << "	</quadrilaterals>" << std::endl;
 
-		_fout << "	<prisms>";
-		for(unsigned i = 0; i < _prisms.size();){
-			for(unsigned j = 0; j < 6; ++j){
-				_fout << _prisms[i+j] << " ";
+
+		_fout << "	<tetrahedrons>";
+		for(unsigned i = 0; i < _tets.size(); ++i){
+			for(unsigned j = 0; j < 4; ++j){
+				_fout << _tets[i][j] << " ";
 			}
-			i+=6;
+		}
+		_fout << "	</tetrahedrons>" << std::endl;
+
+		_fout << "	<prisms>";
+		for(unsigned i = 0; i < _prisms.size(); ++i){
+			for(unsigned j = 0; j < 6; ++j){
+				_fout << _prisms[i][j] << " ";
+			}
 		}
 		_fout << "	</prisms>" << std::endl;
 
+		_fout << "	<pyramids>";
+		for(unsigned i = 0; i < _pyramids.size(); ++i){
+			for(unsigned j = 0; j < 5; ++j){
+				_fout << _pyramids[i][j] << " ";
+			}
+		}
+		_fout << "	</pyramids>" << std::endl;
 
-
-		std::vector<unsigned> sizes(3);
+		std::vector<unsigned> sizes(6);
 		sizes[0] = _edges.size();
 		sizes[1] = _triangles.size();
 		sizes[2] = _quadrilaterals.size();
+		sizes[3] = _tets.size();
+		sizes[4] = _prisms.size();
+		sizes[5] = _pyramids.size();
 
 		return sizes;
 	}
@@ -444,6 +522,12 @@ public:
 		}
 		_fout << "</faces>" << std::endl;
 
+		_fout << "			<volumes>";
+		for(unsigned i = 0; i < sizes[3]+sizes[4]+sizes[5]; ++i){
+			_fout << i << " ";
+		}
+		_fout << "</volumes>" << std::endl;
+
 
 		_fout << "		</subset>" << std::endl;
 		_fout << "	</subset_handler>" << std::endl;
@@ -458,7 +542,9 @@ private:
 	std::vector<std::pair<unsigned, unsigned> > _edges;
 	std::vector<std::vector<unsigned> > _triangles;
 	std::vector<std::vector<unsigned> > _quadrilaterals;
-	std::vector<unsigned> _prisms;
+	std::vector<std::vector<unsigned> > _tets;
+	std::vector<std::vector<unsigned> > _prisms;
+	std::vector<std::vector<unsigned> > _pyramids;
 };
 
 
