@@ -4,7 +4,20 @@
 ./configure
 make
 
+---USAGE---
+<prgm> <input>.vtu <output.vtu> [-c]
+
 ---MISC---
 
-The functionality of the converter is intended to increase according to needs. 
+Assumes vtu files to be in XML-ascii mode - use, e.g., paraview to convert
+from binary to ascii format.
+
+The functionality of the converter is intended to increase with needs. 
 If your vtu file is not supported, email it to lukas.larisch@kaust.edu.sa
+
+---FUNCTIONALITY---
+
+Points, Edges, Triangles, Quadrilaterals, Tets, Prisms, Pyramids.
+
+-c flag (currently arg 4) combines adds point data to position data and writes
+an additional grid. Makes sense for, e.g., displacement. 
