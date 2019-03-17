@@ -1,3 +1,6 @@
+#ifndef __HPP__EMVIS_vtu_ugx_converter
+#define __HPP__EMVIS_vtu_ugx_converter
+
 #include <iostream>
 #include <istream>
 #include <fstream>
@@ -330,7 +333,7 @@ public:
 	}
 
 	//rtn = vector <edges.size(), triangles.size(), quadrilaterals.size()>
-	std::vector<unsigned> write_elements(std::vector<unsigned> &conn, std::vector<unsigned> &offsets, std::vector<unsigned> &types){
+	std::vector<unsigned> assemble_elements(std::vector<unsigned> &conn, std::vector<unsigned> &offsets, std::vector<unsigned> &types){
 		assert(offsets.size() == types.size());
 
 		unsigned j = 0;
@@ -429,7 +432,6 @@ public:
 				default:
 					break;
 			}
-			//if(cnt == 1){ break; };
 		}
 
 		//rem doubles
@@ -442,6 +444,20 @@ public:
 		std::sort(_quadrilaterals.begin(), _quadrilaterals.end());
 		_quadrilaterals.erase(std::unique(_quadrilaterals.begin(), _quadrilaterals.end()), _quadrilaterals.end());
 
+
+		std::vector<unsigned> sizes(6);
+		sizes[0] = _edges.size();
+		sizes[1] = _triangles.size();
+		sizes[2] = _quadrilaterals.size();
+		sizes[3] = _tets.size();
+		sizes[4] = _prisms.size();
+		sizes[5] = _pyramids.size();
+
+		return sizes;
+
+	}
+
+	void write_elements(){
 		_fout << "	<edges>";
 		for(unsigned i = 0; i < _edges.size(); ++i){
 			_fout << _edges[i].first << " " << _edges[i].second << " ";
@@ -488,16 +504,6 @@ public:
 			}
 		}
 		_fout << "	</pyramids>" << std::endl;
-
-		std::vector<unsigned> sizes(6);
-		sizes[0] = _edges.size();
-		sizes[1] = _triangles.size();
-		sizes[2] = _quadrilaterals.size();
-		sizes[3] = _tets.size();
-		sizes[4] = _prisms.size();
-		sizes[5] = _pyramids.size();
-
-		return sizes;
 	}
 
 	void write_subset_handler(unsigned num_points, std::vector<unsigned> &sizes){
@@ -537,7 +543,7 @@ public:
 		_fout << "</grid>" << std::endl;
 	}
 
-private:
+public: //TODO
 	std::ofstream _fout;
 	std::vector<std::pair<unsigned, unsigned> > _edges;
 	std::vector<std::vector<unsigned> > _triangles;
@@ -548,51 +554,4 @@ private:
 };
 
 
-void do_it(std::string fin, std::string fout, bool combine=false){
-	PARSE P(fin);
-	std::pair<unsigned, unsigned> num_data = P.parse_header();
-
-	std::vector<std::vector<double> > point_data(num_data.first);
-	P.parse_point_data(point_data, num_data.first);
-
-	std::vector<std::vector<double> > points(num_data.first);
-	P.parse_points(points, num_data.first);
-
-	std::vector<unsigned> conn; //(num_data.second);
-	P.parse_connectivity(conn);
-
-	std::vector<unsigned> offsets;
-	P.parse_offsets(offsets, num_data.second);
-
-	std::vector<unsigned> types;
-	P.parse_types(types);
-
-	P.end_file();
-
-	WRITE W(fout);
-	W.write_header();
-	W.write_points(points);
-	std::vector<unsigned> sizes = W.write_elements(conn, offsets, types);
-	W.write_subset_handler(num_data.first, sizes);
-	W.write_eof();
-
-	if(combine){
-		std::cout << "combine point data with points position" << std::endl;
-
-		for(unsigned i = 0; i < points.size(); ++i){
-			for(unsigned j = 0; j < points[i].size(); ++j){
-				points[i][j] += point_data[i][j];
-			}
-		}
-
-		fout = fout+"c";
-
-		WRITE Wc(fout);
-		Wc.write_header();
-		Wc.write_points(points);
-
-		sizes = Wc.write_elements(conn, offsets, types);
-		Wc.write_subset_handler(num_data.first, sizes);
-		Wc.write_eof();
-	}
-}
+#endif //guard
