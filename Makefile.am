@@ -1,2 +1,5 @@
+ACLOCAL_AMFLAGS = -Im4
+
 bin_PROGRAMS = vtu_ugx_converter
-vtu_ugx_converter_SOURCES = vtu_ugx_converter.cpp
+AM_DEFAULT_SOURCE_EXT=.cpp
+
