@@ -1,3 +1,7 @@
+---PREREQUIREMENTS---
+
+Needs automake and related build tools.
+
 ---INSTALL---
 
 ./bootstrap

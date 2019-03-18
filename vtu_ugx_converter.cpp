@@ -53,14 +53,16 @@ void do_it(std::string fin, std::string fout, bool combine=false){
 
 
 void help(){
-	std::cout << "usage: ./converter <fin> <fout>" << std::endl;
+	std::cout << "usage: ./converter [-c] [<fin>]*" << std::endl;
 }
 
 int main(int argc, char **argv){
-	if(argc < 3){
+	if(argc < 2){
 		help();
 		return -1;
 	}
+
+	bool something_done = false;
 
 	bool combine = false;
 
@@ -74,6 +76,11 @@ int main(int argc, char **argv){
 		std::string fout = fin;
 		fout.replace(pos, pos+4, ".ugx");
 		std::cout << "converting " << fin << "..." << std::endl; 
-		do_it(fin, fout, combine);	
+		do_it(fin, fout, combine);
+		something_done = true;
+	}
+
+	if(!something_done){
+		help();
 	}
 }

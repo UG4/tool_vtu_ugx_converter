@@ -33,7 +33,14 @@ public:
 		}
 		else{
 			skip_initial_spaces();
+			remove_stupid_windoof_eol_if();
 			return _line;
+		}
+	}
+
+	void remove_stupid_windoof_eol_if(){
+		if(int(_line[_line.size()-1] == 13)){
+			_line = _line.substr(0, _line.size()-1);
 		}
 	}
 
@@ -97,6 +104,16 @@ public:
 		}
 	}
 
+	bool is_contained(std::string token){
+		if(!_line.size()){
+			get_line();
+		}
+		if(_line.find(token) == std::string::npos){
+			return false;
+		}
+		return true;
+	}
+
 	void skip_until(std::string token){
 		while(_line.find(token) == std::string::npos){
 			get_line();
@@ -126,11 +143,22 @@ public:
 	void parse_point_data(std::vector<std::vector<double> > &point_data, unsigned num_points){
 		get_line();
 
-		if(_line != "<PointData>"){
+		if(!is_contained("<PointData>")){
 			return;
 		}
 
 		expect_exact("<PointData>");
+
+		if(!is_contained("<DataArray type")){
+			skip_until("</PointData>");
+			expect_exact("</PointData>");
+
+			expect_exact("<CellData>");
+			skip_until("</CellData>");
+			expect_exact("</CellData>");
+			return;
+		}
+
 		expect_contained("<DataArray type", false);
 
 		std::string s_name = get_value(_line, "Name");
@@ -184,6 +212,8 @@ public:
 		}
 
 		get_line();
+
+		skip_until("</DataArray>");
 		expect_exact("</DataArray>");
 		expect_exact("</Points>");
 	}
@@ -332,7 +362,7 @@ public:
 		_fout << "</vertices>" << std::endl;
 	}
 
-	//rtn = vector <edges.size(), triangles.size(), quadrilaterals.size()>
+	//<rtn type> = vector <edges.size(), triangles.size(), quadrilaterals.size()>
 	std::vector<unsigned> assemble_elements(std::vector<unsigned> &conn, std::vector<unsigned> &offsets, std::vector<unsigned> &types){
 		assert(offsets.size() == types.size());
 
@@ -430,6 +460,7 @@ public:
 					break;
 
 				default:
+					std::cout << "unsupported cell type \"" << types[i] << "\"" << std::endl;
 					break;
 			}
 		}
