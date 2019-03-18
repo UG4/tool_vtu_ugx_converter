@@ -459,6 +459,29 @@ public:
 
 					break;
 
+				case 24: //VTK_QUADRATIC_TETRA
+
+					edge.first = conn[j]; edge.second = conn[j+4]; _edges.push_back(edge);
+					edge.first = conn[j]; edge.second = conn[j+6]; _edges.push_back(edge);
+					edge.first = conn[j]; edge.second = conn[j+7]; _edges.push_back(edge);
+					edge.first = conn[j+1]; edge.second = conn[j+4]; _edges.push_back(edge);
+					edge.first = conn[j+1]; edge.second = conn[j+5]; _edges.push_back(edge);
+					edge.first = conn[j+1]; edge.second = conn[j+8]; _edges.push_back(edge);
+					edge.first = conn[j+2]; edge.second = conn[j+5]; _edges.push_back(edge);
+					edge.first = conn[j+2]; edge.second = conn[j+6]; _edges.push_back(edge);
+					edge.first = conn[j+2]; edge.second = conn[j+9]; _edges.push_back(edge);
+					edge.first = conn[j+3]; edge.second = conn[j+7]; _edges.push_back(edge);
+					edge.first = conn[j+3]; edge.second = conn[j+8]; _edges.push_back(edge);
+					edge.first = conn[j+3]; edge.second = conn[j+9]; _edges.push_back(edge);
+
+					//TODO: cell types, which ug/promesh elements?
+
+					j+=10;
+
+					cnt++;
+
+					break;
+
 				default:
 					std::cout << "unsupported cell type \"" << types[i] << "\"" << std::endl;
 					break;
