@@ -474,7 +474,13 @@ public:
 					edge.first = conn[j+3]; edge.second = conn[j+8]; _edges.push_back(edge);
 					edge.first = conn[j+3]; edge.second = conn[j+9]; _edges.push_back(edge);
 
-					//TODO: cell types, which ug/promesh elements?
+					triangle[0] = conn[j]; triangle[1] = conn[j+1]; triangle[2] = conn[j+3]; _triangles.push_back(triangle);
+					triangle[0] = conn[j+1]; triangle[1] = conn[j+2]; triangle[2] = conn[j+3]; _triangles.push_back(triangle);
+					triangle[0] = conn[j]; triangle[1] = conn[j+1]; triangle[2] = conn[j+3]; _triangles.push_back(triangle);
+					triangle[0] = conn[j]; triangle[1] = conn[j+2]; triangle[2] = conn[j+3]; _triangles.push_back(triangle);
+					triangle[0] = conn[j]; triangle[1] = conn[j+1]; triangle[2] = conn[j+2]; _triangles.push_back(triangle);
+
+					tet[0] = conn[j]; tet[1] = conn[j+1]; tet[2] = conn[j+2]; tet[3] = conn[j+3], _tets.push_back(tet);
 
 					j+=10;
 
