@@ -121,6 +121,7 @@ public:
 	}
 
 	std::pair<unsigned, unsigned> parse_header(){
+		skip_until("<VTKFile type=\"UnstructuredGrid\"");
 		expect_contained("<VTKFile type=\"UnstructuredGrid\"");
 		expect_exact("<UnstructuredGrid>");
 
@@ -190,7 +191,7 @@ public:
 
 	void parse_points(std::vector<std::vector<double> > &points, unsigned num_points){
 		expect_exact("<Points>");
-		expect_contained("<DataArray type=\"Float32\" Name=\"Points\"", false);
+		expect_contained("<DataArray type=\"Float32\"", false);
 
 		std::string s_name = get_value(_line, "Name");
 		std::string s_dim = get_value(_line, "NumberOfComponents");
@@ -220,7 +221,8 @@ public:
 
 	void parse_connectivity(std::vector<unsigned> &conn){
 		expect_exact("<Cells>");
-		expect_contained("<DataArray type=\"Int64\" Name=\"connectivity\"", false);
+		expect_contained("<DataArray", false);
+		expect_contained("Name=\"connectivity\"", false);
 
 		std::string s_name = get_value(_line, "Name");
 		std::cout << "found Cells entry: " << "Name: " << s_name << std::endl; 
@@ -240,7 +242,8 @@ public:
 	}
 
 	void parse_offsets(std::vector<unsigned> &offsets, unsigned num_cells){
-		expect_contained("<DataArray type=\"Int64\" Name=\"offsets\"", false);
+		expect_contained("<DataArray", false);
+		expect_contained("Name=\"offsets\"", false);
 
 		std::string s_name = get_value(_line, "Name");
 		std::cout << "found Cells entry: " << "Name: " << s_name << std::endl; 
@@ -260,7 +263,8 @@ public:
 	}
 
 	void parse_types(std::vector<unsigned> &types){
-		expect_contained("<DataArray type=\"UInt8\" Name=\"types\"", false);
+		expect_contained("<DataArray", false);
+		expect_contained("Name=\"types\"", false);
 
 		std::string s_name = get_value(_line, "Name");
 		std::cout << "found Cells entry: " << "Name: " << s_name << std::endl; 
@@ -374,6 +378,7 @@ public:
 		std::vector<unsigned> prism(6);
 		std::vector<unsigned> tet(4);
 		std::vector<unsigned> pyramid(5);
+		std::vector<unsigned> hexahedron(8);
 
 		unsigned cnt = 0;
 
@@ -399,6 +404,36 @@ public:
 					cnt++;
 
 					j+= 4;
+
+					break;
+
+				case 12: //VTK_HEXAHEDRON
+					edge.first = conn[j]; edge.second = conn[j+1]; _edges.push_back(edge);
+					edge.first = conn[j]; edge.second = conn[j+3]; _edges.push_back(edge);
+					edge.first = conn[j]; edge.second = conn[j+4]; _edges.push_back(edge);
+					edge.first = conn[j+1]; edge.second = conn[j+2]; _edges.push_back(edge);
+					edge.first = conn[j+1]; edge.second = conn[j+5]; _edges.push_back(edge);
+					edge.first = conn[j+2]; edge.second = conn[j+3]; _edges.push_back(edge);
+					edge.first = conn[j+2]; edge.second = conn[j+6]; _edges.push_back(edge);
+					edge.first = conn[j+3]; edge.second = conn[j+7]; _edges.push_back(edge);
+					edge.first = conn[j+4]; edge.second = conn[j+5]; _edges.push_back(edge);
+					edge.first = conn[j+4]; edge.second = conn[j+7]; _edges.push_back(edge);
+					edge.first = conn[j+5]; edge.second = conn[j+6]; _edges.push_back(edge);
+					edge.first = conn[j+6]; edge.second = conn[j+7]; _edges.push_back(edge);
+
+					quadrilateral[0] = conn[j]; quadrilateral[1] = conn[j+1]; quadrilateral[2] = conn[j+5]; quadrilateral[3] = conn[j+4]; _quadrilaterals.push_back(quadrilateral);
+					quadrilateral[0] = conn[j+1]; quadrilateral[1] = conn[j+2]; quadrilateral[2] = conn[j+6]; quadrilateral[3] = conn[j+5]; _quadrilaterals.push_back(quadrilateral);
+					quadrilateral[0] = conn[j]; quadrilateral[1] = conn[j+3]; quadrilateral[2] = conn[j+7]; quadrilateral[3] = conn[j+4]; _quadrilaterals.push_back(quadrilateral);
+					quadrilateral[0] = conn[j+2]; quadrilateral[1] = conn[j+3]; quadrilateral[2] = conn[j+7]; quadrilateral[3] = conn[j+6]; _quadrilaterals.push_back(quadrilateral);
+					quadrilateral[0] = conn[j]; quadrilateral[1] = conn[j+1]; quadrilateral[2] = conn[j+2]; quadrilateral[3] = conn[j+3]; _quadrilaterals.push_back(quadrilateral);
+					quadrilateral[0] = conn[j+4]; quadrilateral[1] = conn[j+5]; quadrilateral[2] = conn[j+6]; quadrilateral[3] = conn[j+7]; _quadrilaterals.push_back(quadrilateral);
+
+					hexahedron[0] = conn[j]; hexahedron[1] = conn[j+1]; hexahedron[2] = conn[j+2]; hexahedron[3] = conn[j+3];
+					hexahedron[4] = conn[j+4]; hexahedron[5] = conn[j+5]; hexahedron[6] = conn[j+6]; hexahedron[7] = conn[j+7]; _hexahedrons.push_back(hexahedron);
+
+					j+=8;
+
+					cnt++;
 
 					break;
 
@@ -460,7 +495,6 @@ public:
 					break;
 
 				case 24: //VTK_QUADRATIC_TETRA
-
 					edge.first = conn[j]; edge.second = conn[j+4]; _edges.push_back(edge);
 					edge.first = conn[j]; edge.second = conn[j+6]; _edges.push_back(edge);
 					edge.first = conn[j]; edge.second = conn[j+7]; _edges.push_back(edge);
@@ -505,13 +539,14 @@ public:
 		_quadrilaterals.erase(std::unique(_quadrilaterals.begin(), _quadrilaterals.end()), _quadrilaterals.end());
 
 
-		std::vector<unsigned> sizes(6);
+		std::vector<unsigned> sizes(7);
 		sizes[0] = _edges.size();
 		sizes[1] = _triangles.size();
 		sizes[2] = _quadrilaterals.size();
 		sizes[3] = _tets.size();
 		sizes[4] = _prisms.size();
 		sizes[5] = _pyramids.size();
+		sizes[6] = _hexahedrons.size();
 
 		return sizes;
 
@@ -564,6 +599,14 @@ public:
 			}
 		}
 		_fout << "	</pyramids>" << std::endl;
+
+		_fout << "	<hexahedrons>";
+		for(unsigned i = 0; i < _hexahedrons.size(); ++i){
+			for(unsigned j = 0; j < 8; ++j){
+				_fout << _hexahedrons[i][j] << " ";
+			}
+		}
+		_fout << "	</hexahedrons>" << std::endl;
 	}
 
 	void write_subset_handler(unsigned num_points, std::vector<unsigned> &sizes){
@@ -589,7 +632,7 @@ public:
 		_fout << "</faces>" << std::endl;
 
 		_fout << "			<volumes>";
-		for(unsigned i = 0; i < sizes[3]+sizes[4]+sizes[5]; ++i){
+		for(unsigned i = 0; i < sizes[3]+sizes[4]+sizes[5]+sizes[6]; ++i){
 			_fout << i << " ";
 		}
 		_fout << "</volumes>" << std::endl;
@@ -611,6 +654,7 @@ public: //TODO
 	std::vector<std::vector<unsigned> > _tets;
 	std::vector<std::vector<unsigned> > _prisms;
 	std::vector<std::vector<unsigned> > _pyramids;
+	std::vector<std::vector<unsigned> > _hexahedrons;
 };
 
 

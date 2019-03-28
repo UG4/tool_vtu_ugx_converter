@@ -1,12 +1,18 @@
 #include "vtu_ugx_converter.hpp"
 
 
-void do_it(std::string fin, std::string fout, bool combine=false){
+void do_it(std::string fin, std::string fout, bool combine=false, double scale=1.0){
 	PARSE P(fin);
 	std::pair<unsigned, unsigned> num_data = P.parse_header();
 
 	std::vector<std::vector<double> > point_data(num_data.first);
 	P.parse_point_data(point_data, num_data.first);
+
+	for(unsigned i = 0; i < point_data.size(); ++i){
+		for(unsigned j = 0; j < point_data[i].size(); ++j){
+			point_data[i][j] *= scale;
+		}
+	}
 
 	std::vector<std::vector<double> > points(num_data.first);
 	P.parse_points(points, num_data.first);
@@ -66,9 +72,17 @@ int main(int argc, char **argv){
 
 	bool combine = false;
 
+	double scale = 1.0;
+
 	for(unsigned i = 1; i < argc; ++i){
 		if(strcmp(argv[i], "-c") == 0){
 			combine = true;
+			continue;
+		}
+		if(strcmp(argv[i], "-s") == 0){
+			scale = std::stod(argv[i+1]);
+			std::cout << "changed scale to " << scale << std::endl;
+			++i;
 			continue;
 		}
 		std::string fin = argv[i];
@@ -76,7 +90,7 @@ int main(int argc, char **argv){
 		std::string fout = fin;
 		fout.replace(pos, pos+4, ".ugx");
 		std::cout << "converting " << fin << "..." << std::endl; 
-		do_it(fin, fout, combine);
+		do_it(fin, fout, combine, scale);
 		something_done = true;
 	}
 

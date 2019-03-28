@@ -9,7 +9,7 @@ Needs automake and related build tools.
 make
 
 ---USAGE---
-<prgm> <input>.vtu <output.vtu> [-c]
+<prgm> [-c] [<input>.vtu]+
 
 ---MISC---
 
@@ -21,7 +21,8 @@ If your vtu file is not supported, email it to lukas.larisch@kaust.edu.sa
 
 ---FUNCTIONALITY---
 
-Points, Edges, Triangles, Quadrilaterals, Tets, Prisms, Pyramids, Quadratic Tets.
+Points, Edges, Triangles, Quadrilaterals, Tets, Prisms, Pyramids, Quadratic
+Tets, Hexahedrons.
 
 -c flag (currently arg 4) combines adds point data to position data and writes
 an additional grid. Makes sense for, e.g., displacement. 
