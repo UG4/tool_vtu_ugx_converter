@@ -22,10 +22,10 @@ If your vtu file is not supported, email it to lukas.larisch@kaust.edu.sa
 ---FUNCTIONALITY---
 
 Points, Edges, Triangles, Quadrilaterals, Tets, Prisms, Pyramids, Quadratic
-Tets, Hexahedrons.
+Tets (reduced to simple Tets), Hexahedrons.
 
--c flag (currently arg 4) combines adds point data to position data and writes
-an additional grid. Makes sense for, e.g., displacement. 
+-c flag adds point data to position data and writes
+an additional grid. Makes sense for, e.g., displacement.
 
-Bridge to ug in ug_bridge_vtu.cpp. Tested with ProMesh. Now direct reading of
+Bridge to ug in ug_bridge_vtu.cpp. Tested with ProMesh. Now, direct reading of
 vtus is possible.

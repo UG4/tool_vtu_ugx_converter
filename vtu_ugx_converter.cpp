@@ -30,8 +30,8 @@ void do_it(std::string fin, std::string fout, bool combine=false, double scale=1
 
 	WRITE W(fout);
 	W.write_header();
+	std::vector<unsigned> sizes = W.assemble_elements(points, conn, offsets, types);
 	W.write_points(points);
-	std::vector<unsigned> sizes = W.assemble_elements(conn, offsets, types);
 	W.write_elements();
 	W.write_subset_handler(num_data.first, sizes);
 	W.write_eof();
@@ -49,8 +49,8 @@ void do_it(std::string fin, std::string fout, bool combine=false, double scale=1
 
 		WRITE Wc(fout);
 		Wc.write_header();
+		sizes = Wc.assemble_elements(points, conn, offsets, types);
 		Wc.write_points(points);
-		sizes = Wc.assemble_elements(conn, offsets, types);
 		Wc.write_elements();
 		Wc.write_subset_handler(num_data.first, sizes);
 		Wc.write_eof();

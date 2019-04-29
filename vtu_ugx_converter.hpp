@@ -359,6 +359,9 @@ public:
 	void write_points(std::vector<std::vector<double> > &points, unsigned dim=3){
 		_fout << "	<vertices coords=\"" << dim << "\">";
 		for(unsigned i = 0; i < points.size(); ++i){
+			if(_skip_points[i]){
+				continue;
+			}
 			for(unsigned j = 0; j < dim; ++j){
 				_fout << points[i][j] << " ";
 			}
@@ -367,7 +370,7 @@ public:
 	}
 
 	//<rtn type> = vector <edges.size(), triangles.size(), quadrilaterals.size()>
-	std::vector<unsigned> assemble_elements(std::vector<unsigned> &conn, std::vector<unsigned> &offsets, std::vector<unsigned> &types){
+	std::vector<unsigned> assemble_elements(std::vector<std::vector<double> > &points, std::vector<unsigned> &conn, std::vector<unsigned> &offsets, std::vector<unsigned> &types){
 		assert(offsets.size() == types.size());
 
 		unsigned j = 0;
@@ -379,6 +382,8 @@ public:
 		std::vector<unsigned> tet(4);
 		std::vector<unsigned> pyramid(5);
 		std::vector<unsigned> hexahedron(8);
+
+		_skip_points.assign(points.size(), false);
 
 		unsigned cnt = 0;
 
@@ -495,6 +500,14 @@ public:
 					break;
 
 				case 24: //VTK_QUADRATIC_TETRA
+					edge.first = conn[j]; edge.second = conn[j+1]; _edges.push_back(edge);
+					edge.first = conn[j]; edge.second = conn[j+2]; _edges.push_back(edge);
+					edge.first = conn[j]; edge.second = conn[j+3]; _edges.push_back(edge);
+					edge.first = conn[j+1]; edge.second = conn[j+2]; _edges.push_back(edge);
+					edge.first = conn[j+1]; edge.second = conn[j+3]; _edges.push_back(edge);
+					edge.first = conn[j+2]; edge.second = conn[j+3]; _edges.push_back(edge);
+
+/*	without suppressing vertices
 					edge.first = conn[j]; edge.second = conn[j+4]; _edges.push_back(edge);
 					edge.first = conn[j]; edge.second = conn[j+6]; _edges.push_back(edge);
 					edge.first = conn[j]; edge.second = conn[j+7]; _edges.push_back(edge);
@@ -507,14 +520,21 @@ public:
 					edge.first = conn[j+3]; edge.second = conn[j+7]; _edges.push_back(edge);
 					edge.first = conn[j+3]; edge.second = conn[j+8]; _edges.push_back(edge);
 					edge.first = conn[j+3]; edge.second = conn[j+9]; _edges.push_back(edge);
+*/
 
-					triangle[0] = conn[j]; triangle[1] = conn[j+1]; triangle[2] = conn[j+3]; _triangles.push_back(triangle);
-					triangle[0] = conn[j+1]; triangle[1] = conn[j+2]; triangle[2] = conn[j+3]; _triangles.push_back(triangle);
+					triangle[0] = conn[j]; triangle[1] = conn[j+1]; triangle[2] = conn[j+2]; _triangles.push_back(triangle);
 					triangle[0] = conn[j]; triangle[1] = conn[j+1]; triangle[2] = conn[j+3]; _triangles.push_back(triangle);
 					triangle[0] = conn[j]; triangle[1] = conn[j+2]; triangle[2] = conn[j+3]; _triangles.push_back(triangle);
-					triangle[0] = conn[j]; triangle[1] = conn[j+1]; triangle[2] = conn[j+2]; _triangles.push_back(triangle);
+					triangle[0] = conn[j+1]; triangle[1] = conn[j+2]; triangle[2] = conn[j+3]; _triangles.push_back(triangle);
 
 					tet[0] = conn[j]; tet[1] = conn[j+1]; tet[2] = conn[j+2]; tet[3] = conn[j+3], _tets.push_back(tet);
+
+					_skip_points[conn[j+4]] = true;
+					_skip_points[conn[j+5]] = true;
+					_skip_points[conn[j+6]] = true;
+					_skip_points[conn[j+7]] = true;
+					_skip_points[conn[j+8]] = true;
+					_skip_points[conn[j+9]] = true;
 
 					j+=10;
 
@@ -615,6 +635,9 @@ public:
 
 		_fout << "			<vertices>";
 		for(unsigned i = 0; i < num_points; ++i){
+			if(_skip_points[i]){
+				continue;
+			}
 			_fout << i << " ";
 		}
 		_fout << "</vertices>" << std::endl;
@@ -655,6 +678,7 @@ public: //TODO
 	std::vector<std::vector<unsigned> > _prisms;
 	std::vector<std::vector<unsigned> > _pyramids;
 	std::vector<std::vector<unsigned> > _hexahedrons;
+	std::vector<bool> _skip_points;
 };
 
 
