@@ -164,6 +164,9 @@ public:
 
 		std::string s_name = get_value(_line, "Name");
 		std::string s_dim = get_value(_line, "NumberOfComponents");
+		if(s_dim != "1" && s_dim != "2" && s_dim != "3"){
+			s_dim = "1";
+		}
 		unsigned dim;
 		myatoi(s_dim, dim);
 
@@ -202,7 +205,6 @@ public:
 
 
 		token_iterator tIt(*this, " ", false);
-
 		for(unsigned i = 0; i < num_points; ++i){
 			points[i].resize(dim);
 			for(unsigned j = 0; j < dim; ++j){
@@ -389,6 +391,42 @@ public:
 
 		for(unsigned i = 0; i < types.size(); ++i){
 			switch(types[i]){
+				case 3: //VTK_LINE
+					edge.first = conn[j]; edge.second = conn[j+1]; _edges.push_back(edge);
+
+					cnt++;
+
+					j+= 2;
+
+					break;
+
+				case 5: //VTK_TRIANGLE
+					edge.first = conn[j]; edge.second = conn[j+1]; _edges.push_back(edge);
+					edge.first = conn[j]; edge.second = conn[j+2]; _edges.push_back(edge);
+					edge.first = conn[j+1]; edge.second = conn[j+2]; _edges.push_back(edge);
+
+					triangle[0] = conn[j]; triangle[1] = conn[j+1]; triangle[2] = conn[j+2]; _triangles.push_back(triangle);
+
+					cnt++;
+
+					j+= 3;
+
+					break;
+
+				case 9: //VTK_QUAD
+					edge.first = conn[j]; edge.second = conn[j+1]; _edges.push_back(edge);
+					edge.first = conn[j]; edge.second = conn[j+3]; _edges.push_back(edge);
+					edge.first = conn[j+1]; edge.second = conn[j+2]; _edges.push_back(edge);
+					edge.first = conn[j+2]; edge.second = conn[j+3]; _edges.push_back(edge);
+
+					quadrilateral[0] = conn[j]; quadrilateral[1] = conn[j+1]; quadrilateral[2] = conn[j+2]; quadrilateral[3] = conn[j+3]; _quadrilaterals.push_back(quadrilateral);
+
+					cnt++;
+
+					j+= 4;
+
+					break;
+
 				case 10: //VTK_TETRA
 					edge.first = conn[j]; edge.second = conn[j+1]; _edges.push_back(edge);
 					edge.first = conn[j]; edge.second = conn[j+2]; _edges.push_back(edge);

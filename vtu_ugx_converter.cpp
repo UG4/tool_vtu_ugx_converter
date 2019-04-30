@@ -39,9 +39,18 @@ void do_it(std::string fin, std::string fout, bool combine=false, double scale=1
 	if(combine){
 		std::cout << "combine point data with points position" << std::endl;
 
-		for(unsigned i = 0; i < points.size(); ++i){
-			for(unsigned j = 0; j < points[i].size(); ++j){
-				points[i][j] += point_data[i][j];
+		if(point_data.size() && point_data[0].size() == 1){
+			for(unsigned i = 0; i < points.size(); ++i){
+				assert(points[i][2] == 0);
+				points[i][2] += point_data[i][0];
+			}
+		}
+
+		else{
+			for(unsigned i = 0; i < points.size(); ++i){
+				for(unsigned j = 0; j < points[i].size(); ++j){
+					points[i][j] += point_data[i][j];
+				}
 			}
 		}
 

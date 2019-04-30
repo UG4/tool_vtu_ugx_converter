@@ -26,6 +26,21 @@ Tets (reduced to simple Tets), Hexahedrons.
 
 -c flag adds point data to position data and writes
 an additional grid. Makes sense for, e.g., displacement.
+In case of a 2d grid and 1d point data, the point data
+is used for the 3rd dimension. Makes sense for, e.g., concentration, amplitude.
 
 Bridge to ug in ug_bridge_vtu.cpp. Tested with ProMesh. Now, direct reading of
 vtus is possible.
+
+---UNSUPPORTED VTK CELL TYPES---
+1: Vertex
+2: Polyvertex
+4: Polyline
+6: Triangle strip
+7: Polygon
+8: Pixel
+11: Voxel
+21: Quadratic edge
+22: Quadratic triangle
+23: Quadratic Quad
+25: Quadratic Hexahedron
